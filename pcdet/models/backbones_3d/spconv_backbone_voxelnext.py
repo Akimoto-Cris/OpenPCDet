@@ -211,6 +211,7 @@ class VoxelResBackBone8xVoxelNeXt(nn.Module):
                 'x_conv2': x_conv2,
                 'x_conv3': x_conv3,
                 'x_conv4': x_conv4,
+                'x_conv6': x_conv6
             }
         })
         batch_dict.update({

@@ -1,5 +1,5 @@
 DATASET: 'NuScenesDataset'
-DATA_PATH: '../data/nuscenes'
+DATA_PATH: '/programs/3d_vtc/data/nuscenes'
 
 VERSION: 'v1.0-trainval'
 MAX_SWEEPS: 10
@@ -9,12 +9,14 @@ FILTER_MIN_POINTS_IN_GT: 1
 
 DATA_SPLIT: {
     'train': train,
-    'test': val
+    'test': val,
+    'prune': 50_samples
 }
 
 INFO_PATH: {
     'train': [nuscenes_infos_10sweeps_train.pkl],
     'test': [nuscenes_infos_10sweeps_val.pkl],
+    'prune':[nuscenes_infos_10sweeps_val.pkl]
 }
 
 POINT_CLOUD_RANGE: [-51.2, -51.2, -5.0, 51.2, 51.2, 3.0]

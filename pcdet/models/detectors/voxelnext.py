@@ -1,15 +1,18 @@
 from .detector3d_template import Detector3DTemplate
-
+import torch.nn
+from pcdet.models.backbones_3d.spconv_backbone_voxelnext import VoxelResBackBone8xVoxelNeXt
 class VoxelNeXt(Detector3DTemplate):
     def __init__(self, model_cfg, num_class, dataset):
         super().__init__(model_cfg=model_cfg, num_class=num_class, dataset=dataset)
         self.module_list = self.build_networks()
 
-    def forward(self, batch_dict):
-
+    def forward(self, batch_dict,return_head_dict=False):
         for cur_module in self.module_list:
             batch_dict = cur_module(batch_dict)
-
+        
+        if return_head_dict:
+            # return self.dense_head.forward_ret_dict['pred_dicts']
+            return batch_dict
         if self.training:
             loss, tb_dict, disp_dict = self.get_training_loss()
             ret_dict = {

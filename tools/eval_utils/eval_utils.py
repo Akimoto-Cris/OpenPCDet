@@ -19,7 +19,7 @@ def statistics_info(cfg, ret_dict, metric, disp_dict):
         '(%d, %d) / %d' % (metric['recall_roi_%s' % str(min_thresh)], metric['recall_rcnn_%s' % str(min_thresh)], metric['gt_num'])
 
 
-def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=False, result_dir=None):
+def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=False, result_dir=None, return_pred_dicts=False):
     result_dir.mkdir(parents=True, exist_ok=True)
 
     final_output_dir = result_dir / 'final_result' / 'data'
@@ -51,6 +51,8 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
                 broadcast_buffers=False
         )
     model.eval()
+    if return_pred_dicts:
+        pred_dicts_all = []
 
     if cfg.LOCAL_RANK == 0:
         progress_bar = tqdm.tqdm(total=len(dataloader), leave=True, desc='eval', dynamic_ncols=True)
@@ -65,6 +67,8 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
             pred_dicts, ret_dict = model(batch_dict)
 
         disp_dict = {}
+        if return_pred_dicts:
+            pred_dicts_all.append(pred_dicts)
 
         if getattr(args, 'infer_time', False):
             inference_time = time.time() - start_time
@@ -133,7 +137,41 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
 
     logger.info('Result is saved to %s' % result_dir)
     logger.info('****************Evaluation done.*****************')
+    if return_pred_dicts:
+        ret_dict['pred_dicts'] = pred_dicts_all
     return ret_dict
+
+
+@torch.no_grad()
+def eval_one_iter(model, dataloader, num_iters=1, feat_fn=lambda batch_dict: batch_dict["encoded_spconv_tensor"].dense()):
+    pred_dicts_all = []
+
+    model.eval()
+
+    for i, batch_dict in enumerate(dataloader):
+        if i >= num_iters:
+            break
+        load_data_to_gpu(batch_dict)
+        batch_dict = model(batch_dict, return_head_dict=True)
+        
+        feat = feat_fn(batch_dict)
+        
+        pred_dicts_all.append(feat)
+    pred_dicts_all = torch.cat(pred_dicts_all, dim=0)
+    return pred_dicts_all
+
+
+# def inference_one_iter_with_grad(model, dataloader, num_iters=1):
+#     pred_dicts_all = []
+
+#     for i, batch_dict in enumerate(dataloader):
+#         if i >= num_iters:
+#             break
+#         load_data_to_gpu(batch_dict)
+#         pred_dicts = model(batch_dict, return_head_dict=True)
+
+#         pred_dicts_all.extend(pred_dicts)
+#     return pred_dicts_all
 
 
 if __name__ == '__main__':

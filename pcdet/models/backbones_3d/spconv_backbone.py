@@ -3,7 +3,7 @@ from functools import partial
 import torch.nn as nn
 
 from ...utils.spconv_utils import replace_feature, spconv
-
+# from ..model_utils.flops_utils import 
 
 def post_act_block(in_channels, out_channels, kernel_size, indice_key=None, stride=1, padding=0,
                    conv_type='subm', norm_fn=None):

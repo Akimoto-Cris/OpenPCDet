@@ -92,11 +92,19 @@ def main():
     model.eval()
     with torch.no_grad():
         for idx, data_dict in enumerate(demo_dataset):
+            
             logger.info(f'Visualized sample index: \t{idx + 1}')
             data_dict = demo_dataset.collate_batch([data_dict])
             load_data_to_gpu(data_dict)
             pred_dicts, _ = model.forward(data_dict)
-
+            with open('/points.pkl', 'wb') as f:
+                pickle.dump(data_dict['points'][:, 1:].cpu().numpy(), f)
+            with open('/ref_boxes.pkl', 'wb') as f:
+                pickle.dump(pred_dicts[0]['pred_boxes'].cpu().numpy(), f)    
+            with open('/ref_scores.pkl', 'wb') as f:
+                pickle.dump(pred_dicts[0]['pred_scores'].cpu().numpy(), f)    
+            with open('/ref_labels.pkl', 'wb') as f:
+                pickle.dump(pred_dicts[0]['pred_labels'].cpu().numpy(), f)
             V.draw_scenes(
                 points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
                 ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']

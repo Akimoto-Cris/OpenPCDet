@@ -1,7 +1,7 @@
 CLASS_NAMES: ['Car', 'Bus', 'Truck', 'Pedestrian', 'Cyclist']
 
 DATA_CONFIG: 
-    _BASE_CONFIG_: cfgs/dataset_configs/once_dataset.yaml
+    _BASE_CONFIG_: /programs/3d_vtc/tools/cfgs/dataset_configs/once_dataset.yaml
 
 
 MODEL:
